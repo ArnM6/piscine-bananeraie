@@ -39,6 +39,21 @@ python scripts/evaluer_comptage.py --pred resultats/pieds.geojson \
     --parcelles data/test_synthetique/parcelles.geojson
 ```
 
+## Module maladies (feuilles)
+
+Entraînement sur Colab : ouvre `notebooks/maladies_colab.ipynb` dans Google Colab (GPU T4), puis
+*Exécution → Tout exécuter*. Le notebook télécharge les données (Tanzanie pour l'entraînement,
+Bangladesh pour le test), entraîne MobileNetV3, calibre le seuil de rejet, mesure les performances et
+exporte le modèle en ONNX sur ton Drive. Copie ensuite `maladies_*.onnx` et `maladies_*.json` dans `models/`.
+
+Classer un dossier de photos de feuilles (CPU) :
+
+```bash
+python scripts/classer_feuilles.py --images DOSSIER_FEUILLES --out resultats/feuilles.csv
+```
+
+Chaque feuille reçoit `sain`, `sigatoka`, `fusarium` ou **`je_ne_sais_pas`** si le modèle n'est pas assez sûr.
+
 ## Sorties (`resultats/`), toutes ouvrables dans QGIS
 
 | Fichier | Contenu |
@@ -59,15 +74,19 @@ bananes/
   vigueur.py               ExG, VARI, anomalie relative par parcelle
   comptage.py              détection des pieds (baseline maxima locaux)
   bulletin.py              statistiques, alertes, bulletin
+  maladies.py              classifieur de feuilles ONNX avec rejet de l'inconnu
 scripts/
   creer_donnees_test.py    plantation synthétique (test de fumée)
   evaluer_comptage.py      F1 à 1 m + erreur de comptage par parcelle
+  classer_feuilles.py      classe un dossier de photos de feuilles
+notebooks/
+  maladies_colab.ipynb     entraînement maladies (Colab)
+  build_notebook.py        source lisible du notebook (le régénère)
 docs/
   carnet_de_donnees.md     sources, licences, résolution, découpage, fuites
   rapport.md               rapport (4 pages max)
 data/README.md             où télécharger chaque jeu de données
 models/                    poids des modèles (ONNX)
-notebooks/                 entraînements Colab
 ```
 
 ## Données et modèles pré-entraînés

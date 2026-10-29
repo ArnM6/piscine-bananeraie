@@ -4,8 +4,9 @@ pandas>=2.1
 rasterio>=1.3
 geopandas>=0.14
 shapely>=2.0
+pillow>=10.0
+onnxruntime>=1.17   # inférence CPU du modèle maladies
 # Modules à venir (décommenter quand on les branche) :
 # torch, torchvision     # entraînement maladies (Colab)
-# onnxruntime            # inférence CPU sobre
 # deepforest             # détecteur de couronnes pré-entraîné
 # streamlit, folium      # démo

@@ -29,7 +29,10 @@ non téléchargeables. L'article reste une référence de méthode.
 - **Capteur / résolution** : smartphone haute résolution, prise au sol, de près.
 - **Composition** : 11 767 images — saines 3 339, Black Sigatoka 3 496, Fusarium Wilt Race 1 4 932.
 - **Licence** : _à recopier depuis la page Zenodo_.
-- **Découpage** : train/val **par district** (ex. val = un district entier), jamais aléatoire.
+- **Découpage** : train/val **par district** si le district figure dans les chemins des fichiers ;
+  sinon par **groupes de quasi-doublons** (pHash, ≤ 6 bits d'écart), un groupe n'étant jamais coupé.
+  Stratégie réellement appliquée et liste fichier → split : `resultats_maladies/decoupage.csv` (notebook).
+- **Contrôle de fuite entre pays** : toute image du Bangladesh à ≤ 6 bits (pHash) d'une image de Tanzanie est retirée du test.
 - **Fuites** : recoupement très probable avec L2 (même autrice, même région). Doublons
   quasi identiques possibles → dédoublonnage par hash perceptuel avant découpage.
 - **Biais / limites** : fonds, cadrage et éclairage propres à une campagne ; Fusarium
@@ -43,6 +46,8 @@ non téléchargeables. L'article reste une référence de méthode.
 - **Provenance** : ferme de la Bangabandhu Sheikh Mujibur Rahman Agricultural University + champs voisins, Gazipur.
 - **Date** : juin 2021. **Capteurs** : Huawei ELE-L29, Xiaomi Redmi 8A, Xiaomi Redmi Note 9.
 - **Composition (originales)** : Sigatoka 473, Cordana 162, Pestalotiopsis 173, saines 129 = 937.
+- **Téléchargement** : copie du sous-ensemble *raw* publiée sur Hugging Face par Project AgML
+  (`Project-AgML/BananaLSD_leaf_disease_classification`, config `raw`, CC BY 4.0), images déjà en 224×224.
 - **Usage** : **test uniquement**. Sain + Sigatoka = classes connues ; Cordana + Pestalotiopsis = **inconnues** (test du rejet).
 - **Fuites** : le dossier « augmented » est dérivé des originales → **exclu**.
 - **Limites** : Sigatoka noire et jaune non distinguées ; images redimensionnées 224×224 dans le jeu traité.

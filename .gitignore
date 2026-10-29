@@ -8,6 +8,9 @@ resultats/
 models/*
 !models/.gitkeep
 !models/*.onnx
+!models/*.json
+# Notebook : sorties de test local
+notebooks/colab_travail/
 # Python
 __pycache__/
 *.pyc
