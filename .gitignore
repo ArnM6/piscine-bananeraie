@@ -1,0 +1,16 @@
+# Données lourdes : jamais dans Git (on documente où les télécharger)
+data/*
+!data/README.md
+resultats/
+*.tif
+*.tiff
+# Poids : on ne garde que les modèles finaux, exportés en ONNX
+models/*
+!models/.gitkeep
+!models/*.onnx
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+.DS_Store

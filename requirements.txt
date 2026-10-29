@@ -1,0 +1,11 @@
+numpy>=1.26
+scipy>=1.11
+pandas>=2.1
+rasterio>=1.3
+geopandas>=0.14
+shapely>=2.0
+# Modules à venir (décommenter quand on les branche) :
+# torch, torchvision     # entraînement maladies (Colab)
+# onnxruntime            # inférence CPU sobre
+# deepforest             # détecteur de couronnes pré-entraîné
+# streamlit, folium      # démo
