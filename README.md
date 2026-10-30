@@ -44,7 +44,8 @@ python scripts/evaluer_comptage.py --pred resultats/pieds.geojson \
 Entraînement sur Colab : ouvre `notebooks/maladies_colab.ipynb` dans Google Colab (GPU T4), puis
 *Exécution → Tout exécuter*. Le notebook télécharge les données (Tanzanie pour l'entraînement,
 Bangladesh pour le test), entraîne MobileNetV3, calibre le seuil de rejet, mesure les performances et
-exporte le modèle en ONNX sur ton Drive. Copie ensuite `maladies_*.onnx` et `maladies_*.json` dans `models/`.
+exporte le modèle en ONNX sur ton Drive. Si Colab coupe, relancer reprend là où il s'était arrêté.
+Copie ensuite `maladies_*.onnx`, `maladies_*.json` et `maladies_*.banque.npy` dans `models/`.
 
 Classer un dossier de photos de feuilles (CPU) :
 
@@ -52,7 +53,8 @@ Classer un dossier de photos de feuilles (CPU) :
 python scripts/classer_feuilles.py --images DOSSIER_FEUILLES --out resultats/feuilles.csv
 ```
 
-Chaque feuille reçoit `sain`, `sigatoka`, `fusarium` ou **`je_ne_sais_pas`** si le modèle n'est pas assez sûr.
+Chaque feuille reçoit `sain`, `sigatoka`, `fusarium` ou **`je_ne_sais_pas`** si elle ne ressemble pas assez
+aux feuilles vues à l'entraînement (distance aux 10 plus proches exemples connus, méthode kNN).
 
 ## Sorties (`resultats/`), toutes ouvrables dans QGIS
 

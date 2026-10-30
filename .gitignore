@@ -9,6 +9,7 @@ models/*
 !models/.gitkeep
 !models/*.onnx
 !models/*.json
+!models/*.banque.npy
 # Notebook : sorties de test local
 notebooks/colab_travail/
 # Python
@@ -17,3 +18,5 @@ __pycache__/
 .venv/
 .ipynb_checkpoints/
 .DS_Store
+# Archives téléchargées (résultats Drive, données)
+*.zip

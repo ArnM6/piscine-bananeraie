@@ -2,7 +2,7 @@
 
 Usage :
     python scripts/classer_feuilles.py --images DOSSIER_FEUILLES \
-        --modele models/maladies_large_preentraine_aug.onnx --out resultats/feuilles.csv
+        --out resultats/feuilles.csv
 """
 import argparse
 import sys
