@@ -277,6 +277,7 @@ code("""
 tz = pd.concat([pd.read_csv(f) for f in sorted((CACHE / "tanzanie").glob("*/metadonnees.csv"))], ignore_index=True)
 tz["cache"] = [str(CACHE / "tanzanie" / a / f) for a, f in zip(tz.archive, tz.fichier)]
 tz["origine"] = "tanzanie"
+tz["date_exif"] = tz.date_exif.astype("string")   # texte, même si aucune photo n'a de date
 tz = tz[tz.classe.notna()].reset_index(drop=True)
 
 bd_lignes = []
@@ -341,36 +342,47 @@ Des photos prises le même jour, dans le même champ, se ressemblent (lumière, 
 Les couper entre entraînement et validation rend la validation trop facile : c'est ce qui s'est passé en v1,
 et le seuil de rejet en est sorti beaucoup trop strict.
 
-- si la plupart des photos ont une **date EXIF** : une session = un jour de prise de vue ;
-- sinon : une session = un **bloc de 100 photos consécutives** de la même classe (les fichiers sont numérotés
-  dans l'ordre de collecte).
+Le découpage se fait **classe par classe** (chaque classe a ~20 % de ses sessions en validation) :
+- si au moins 80 % des photos de la classe ont une **date EXIF** et qu'elles couvrent **au moins 5 jours** :
+  une session = un jour de prise de vue ;
+- sinon : une session = un **bloc de 100 photos consécutives** (les fichiers sont numérotés dans l'ordre de collecte).
 
-20 % des sessions vont en validation ; un groupe de quasi-doublons n'est jamais coupé.
+Un groupe de quasi-doublons n'est jamais coupé entre entraînement et validation.
 """)
 code("""
 from sklearn.model_selection import GroupShuffleSplit
 
-if tz.date_exif.notna().mean() >= 0.8:
-    tz["session"] = tz.classe + "_" + tz.date_exif.fillna("inconnue").str[:10]
-    STRATEGIE = "par jour de prise de vue (date EXIF)"
-else:
-    tz["session"] = tz.classe + "_bloc" + (tz.numero // 100).astype(str)
-    STRATEGIE = "par blocs de 100 photos consécutives (pas de date EXIF)"
-# Un groupe de quasi-doublons prend la session de son premier membre : il n'est jamais coupé
-tz["groupe"] = tz.groupby("groupe_doublons")["session"].transform("first")
+STRATEGIES = {}
+tz["session"] = ""
+for classe, g in tz.groupby("classe"):
+    jours = g.date_exif.dropna().str[:10]
+    if g.date_exif.notna().mean() >= 0.8 and jours.nunique() >= 5:
+        tz.loc[g.index, "session"] = classe + "_" + g.date_exif.fillna("inconnue").str[:10]
+        STRATEGIES[classe] = f"par jour de prise de vue ({jours.nunique()} jours)"
+    else:
+        tz.loc[g.index, "session"] = classe + "_bloc" + (g.numero // 100).astype(str)
+        STRATEGIES[classe] = f"par blocs de 100 photos consécutives ({jours.nunique()} jour(s) EXIF seulement)"
+STRATEGIE = " ; ".join(f"{c} : {s}" for c, s in STRATEGIES.items())
 
-for essai in range(50):
-    gss = GroupShuffleSplit(n_splits=1, test_size=PART_VALIDATION, random_state=GRAINE + essai)
-    idx_train, idx_val = next(gss.split(tz, groups=tz.groupe))
-    part_val = tz.iloc[idx_val].classe.value_counts() / tz.classe.value_counts()
-    if part_val.reindex(tz.classe.unique()).fillna(0).min() >= 0.1:   # chaque classe a ≥ 10 % en validation
-        break
+# Découpage indépendant pour chaque classe : aucune classe ne peut manquer en validation
 tz["split"] = "train"
-tz.loc[tz.index[idx_val], "split"] = "val"
+for classe, g in tz.groupby("classe"):
+    gss = GroupShuffleSplit(n_splits=1, test_size=PART_VALIDATION, random_state=GRAINE)
+    _, idx_val = next(gss.split(g, groups=g.session))
+    tz.loc[g.index[idx_val], "split"] = "val"
+# Un groupe de quasi-doublons suit le split de son premier membre : il n'est jamais coupé
+tz["split"] = tz.groupby("groupe_doublons")["split"].transform("first")
+tz["groupe"] = tz.session
 bd["split"] = "test"
 
-assert not set(tz[tz.split == "train"].groupe) & set(tz[tz.split == "val"].groupe), "Fuite train/val !"
-print("Stratégie :", STRATEGIE, f"| {tz.groupe.nunique()} sessions")
+effectifs_val = tz[tz.split == "val"].classe.value_counts().reindex(["sain", "sigatoka", "fusarium"]).fillna(0)
+assert (effectifs_val > 0).all(), f"Une classe manque en validation : {effectifs_val.to_dict()}"
+sessions_train = set(tz[tz.split == "train"].session)
+sessions_val = set(tz[tz.split == "val"].session)
+print(f"Sessions coupées par un groupe de quasi-doublons : {len(sessions_train & sessions_val)} (attendu : 0 ou presque)")
+print("Stratégie :")
+for c, strat in STRATEGIES.items():
+    print(f"  - {c} : {strat} | {tz[tz.classe == c].session.nunique()} sessions")
 print(tz.groupby(["split", "classe"]).size().unstack())
 
 colonnes = ["cache", "origine", "classe", "split"]
@@ -465,6 +477,8 @@ def entrainer(nom, architecture, pre_entraine, augmentation, epoques):
         pred = predire(modele, val)[0].argmax(1)
         # Exactitude équilibrée : chaque classe compte pareil, même la moins nombreuse
         score = float(np.mean([(pred[y_val == k] == k).float().mean().item() for k in range(len(CLASSES))]))
+        if not np.isfinite(score):
+            raise RuntimeError(f"Score de validation invalide ({score}) : perte {perte.item()} — vérifie la section 5")
         print(f"[{nom}] époque {ep + 1}/{epoques} | perte {perte.item():.3f} | val équilibrée {score:.3f}", flush=True)
         if score > meilleur:
             meilleur, meilleur_etat = score, {k: v.detach().cpu().clone() for k, v in modele.state_dict().items()}
