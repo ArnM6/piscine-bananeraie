@@ -1,0 +1,47 @@
+{
+  "experience": {
+    "nom": "large_preentraine_aug",
+    "architecture": "mobilenet_v3_large",
+    "pre_entraine": true,
+    "augmentation": true,
+    "exporter": true
+  },
+  "val_equilibree": 0.9925766388575236,
+  "temperature": 0.52567058801651,
+  "minutes_entrainement": 11.5,
+  "parametres_millions": 4.21,
+  "methodes": {
+    "msp": {
+      "precision_alerte": 0.9525222551928784,
+      "rappel_sigatoka": 0.678646934460888,
+      "fausses_alertes_sain": 0.12403100775193798,
+      "rejet_inconnu": 0.7044776119402985,
+      "rejet_a_tort_connu": 0.36212624584717606,
+      "exactitude_sur_acceptees": 0.921875,
+      "auroc_connu_inconnu": 0.7313060941141468,
+      "seuil": 0.9942062497138977
+    },
+    "energie": {
+      "precision_alerte": 0.9471947194719472,
+      "rappel_sigatoka": 0.6067653276955602,
+      "fausses_alertes_sain": 0.12403100775193798,
+      "rejet_inconnu": 0.7373134328358208,
+      "rejet_a_tort_connu": 0.42358803986710963,
+      "exactitude_sur_acceptees": 0.9164265129682997,
+      "auroc_connu_inconnu": 0.7166633609361828,
+      "seuil": 2.1242175102233887
+    },
+    "knn": {
+      "precision_alerte": 0.989501312335958,
+      "rappel_sigatoka": 0.7970401691331924,
+      "fausses_alertes_sain": 0.031007751937984496,
+      "rejet_inconnu": 0.7313432835820896,
+      "rejet_a_tort_connu": 0.30564784053156147,
+      "exactitude_sur_acceptees": 0.9736842105263158,
+      "auroc_connu_inconnu": 0.7746739723310359,
+      "seuil": -0.519010066986084
+    }
+  },
+  "taille_mo": 24.498883,
+  "ms_par_image_cpu": 8.065910339355469
+}

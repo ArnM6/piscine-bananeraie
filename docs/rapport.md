@@ -19,13 +19,44 @@ Effet de la résolution : _résultats à 2, 5, 10 cm/pixel._
 _Indices choisis, justification physique, comparaison saison sèche / humide._
 
 ## 5. Maladies
-| Modèle | Précision | Rappel | Fausses alertes (sain) | Rejet de l'inconnu | Taille | ms/image CPU |
-|---|---|---|---|---|---|---|
+Entraînement : Tanzanie (sain / sigatoka / fusarium). Test : Bangladesh, jamais vu ; cordana et pestalotiopsis
+servent de maladies **inconnues**. Seuil de rejet réglé sur la validation Tanzanie uniquement.
 
-Ablations : pré-entraînement, augmentations, seuil de rejet.
+**Ablations** (rejet kNN, test Bangladesh) :
+
+| Modèle | Précision alertes | Rappel Sigatoka | Fausses alertes (sain) | Rejet inconnu | Rejet à tort (connu) | AUROC connu/inconnu | Taille (Mo) | ms/image CPU |
+|---|---|---|---|---|---|---|---|---|
+| **MobileNetV3-large, pré-entraîné, augmentations** | 0,99 | **0,80** | 3 % | **73 %** | 31 % | 0,78 | 24,5 | 8 |
+| sans pré-entraînement | 0,92 | 0,73 | 23 % | 25 % | 30 % | 0,50 | — | — |
+| sans augmentations | 0,99 | 0,76 | 2 % | 60 % | 30 % | 0,71 | — | — |
+| MobileNetV3-small, pré-entraîné, augmentations | 1,00 | 0,74 | 1 % | 71 % | 29 % | 0,78 | 12,2 | 3 |
+
+**Méthode de rejet** (modèle principal) :
+
+| Méthode | Rappel Sigatoka | Fausses alertes | Rejet inconnu | Rejet à tort | AUROC |
+|---|---|---|---|---|---|
+| Probabilité max. (msp) | 0,68 | 12 % | 70 % | 36 % | 0,73 |
+| Énergie | 0,61 | 12 % | 74 % | 42 % | 0,72 |
+| **Distance kNN (retenue a priori)** | **0,80** | **3 %** | 73 % | **31 %** | **0,78** |
+
+À retenir :
+- le **pré-entraînement est indispensable** : sans lui, le modèle ne distingue plus l'inconnu (AUROC 0,50 = hasard)
+  et les fausses alertes passent de 3 % à 23 % ;
+- les **augmentations** (lumière, cadrage) améliorent le rejet de l'inconnu de 60 % à 73 % ;
+- le **kNN** bat la confiance du classifieur sur toutes les métriques utiles ;
+- la version **small** fait presque aussi bien, 2× plus légère et 2,5× plus rapide : bon candidat pour la station de terrain.
 
 ## 6. Analyse des échecs
-_Cas où ça rate, et pourquoi._
+_Maladies (voir `docs/resultats_maladies/cas_echec.png`)_ :
+- **Sigatoka rejetées** (« je ne sais pas ») : photos du Bangladesh plus ternes et grisâtres que celles de Tanzanie.
+  Le modèle préfère s'abstenir plutôt que se tromper : c'est le comportement honnête attendu.
+- **Pestalotiopsis acceptée comme Sigatoka** (50 cas) : taches sombres à halo jaune, visuellement très proches.
+  Sur le terrain, l'alerte resterait utile (une équipe passe vérifier), mais le diagnostic serait faux.
+- **Feuilles « saines » en alerte** (4 cas) : au moins une présente des taches visibles, en double dans le jeu
+  → probablement une étiquette discutable.
+- **Biais du jeu d'entraînement** : chaque classe a été photographiée à des dates différentes (sain en novembre,
+  fusarium en décembre, sigatoka en janvier). Le modèle peut apprendre la session au lieu de la maladie ;
+  seul le test dans un autre pays le révèle.
 
 ## 7. Limites et passage en conditions réelles
 _Écart feuilles au sol / drone ; transfert entre sites._

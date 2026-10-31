@@ -1,0 +1,44 @@
+{
+  "title": "Banana Imagery Dataset - Tanzania",
+  "doi": "10.5281/zenodo.7670326",
+  "publication_date": "2023-02-23",
+  "description": "<p>The banana images dataset was created to contribute to the study of banana diseases diagnostics. The images target the diagnostics of Black Sigatoka and Fusarium Wilt Race 1 diseases. We are motivated in developing end to end tools to help farmers diagnose diseases and improve banana productivity. The dataset was created to facilitate image classification and object detection tasks.&nbsp;</p>",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Mduma, Neema",
+      "affiliation": "The Nelson Mandela African Institution of Science and Technology",
+      "orcid": "0000-0002-4364-3124"
+    },
+    {
+      "name": "Elinisa, Christian",
+      "affiliation": "The Nelson Mandela African Institution of Science and Technology"
+    }
+  ],
+  "keywords": [
+    "Computer Science",
+    "Computer Vision",
+    "Machine Learning",
+    "Deep Learning"
+  ],
+  "resource_type": {
+    "title": "Dataset",
+    "type": "dataset"
+  },
+  "license": {
+    "id": "cc-by-4.0"
+  },
+  "relations": {
+    "version": [
+      {
+        "index": 0,
+        "is_last": true,
+        "parent": {
+          "pid_type": "recid",
+          "pid_value": "7670325"
+        }
+      }
+    ]
+  },
+  "notes": "Scholarship funders - International Development Research Centre (IDRC) and Swedish International Development Cooperation Agency (SIDA)\nScholarship Programme - Artificial Intelligence for Development (AI4D) Africa\nScholarship Fund Manager - African Center for Technology Studies (ACTS)"
+}

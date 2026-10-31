@@ -1,0 +1,35 @@
+{
+  "classes": [
+    "sain",
+    "sigatoka",
+    "fusarium"
+  ],
+  "temperature": 0.52567058801651,
+  "methode_rejet": "knn",
+  "seuils": {
+    "msp": 0.9942062497138977,
+    "energie": 2.1242175102233887,
+    "knn": -0.519010066986084
+  },
+  "k_voisins": 10,
+  "taille_image": 224,
+  "moyenne": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "ecart_type": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "entraine_sur": "Tanzanie (Zenodo 7670326)",
+  "decoupage": "fusarium : par jour de prise de vue (5 jours) ; sain : par blocs de 100 photos consécutives (2 jour(s) EXIF seulement) ; sigatoka : par blocs de 100 photos consécutives (2 jour(s) EXIF seulement)",
+  "experience": {
+    "nom": "large_preentraine_aug",
+    "architecture": "mobilenet_v3_large",
+    "pre_entraine": true,
+    "augmentation": true,
+    "exporter": true
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "experience": {
+    "nom": "large_sans_preentrainement",
+    "architecture": "mobilenet_v3_large",
+    "pre_entraine": false,
+    "augmentation": true,
+    "exporter": false
+  },
+  "val_equilibree": 0.9693254629770914,
+  "temperature": 0.6853976249694824,
+  "minutes_entrainement": 11.5,
+  "parametres_millions": 4.21,
+  "methodes": {
+    "msp": {
+      "precision_alerte": 0.844574780058651,
+      "rappel_sigatoka": 0.6088794926004228,
+      "fausses_alertes_sain": 0.4108527131782946,
+      "rejet_inconnu": 0.29253731343283584,
+      "rejet_a_tort_connu": 0.3504983388704319,
+      "exactitude_sur_acceptees": 0.5498721227621484,
+      "auroc_connu_inconnu": 0.4903828035900233,
+      "seuil": 0.8642999529838562
+    },
+    "energie": {
+      "precision_alerte": 0.9050925925925926,
+      "rappel_sigatoka": 0.8266384778012685,
+      "fausses_alertes_sain": 0.3178294573643411,
+      "rejet_inconnu": 0.23582089552238805,
+      "rejet_a_tort_connu": 0.2009966777408638,
+      "exactitude_sur_acceptees": 0.5717255717255717,
+      "auroc_connu_inconnu": 0.5472231863936133,
+      "seuil": 1.6117116212844849
+    },
+    "knn": {
+      "precision_alerte": 0.9222520107238605,
+      "rappel_sigatoka": 0.7272727272727273,
+      "fausses_alertes_sain": 0.2248062015503876,
+      "rejet_inconnu": 0.2537313432835821,
+      "rejet_a_tort_connu": 0.2973421926910299,
+      "exactitude_sur_acceptees": 0.541371158392435,
+      "auroc_connu_inconnu": 0.4987429959835375,
+      "seuil": -0.015667632222175598
+    }
+  }
+}

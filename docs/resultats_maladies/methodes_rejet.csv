@@ -1,0 +1,4 @@
+methode,precision_alerte,rappel_sigatoka,fausses_alertes_sain,rejet_inconnu,rejet_a_tort_connu,exactitude_sur_acceptees,auroc_connu_inconnu,seuil
+msp,0.953,0.679,0.124,0.704,0.362,0.922,0.731,0.994
+energie,0.947,0.607,0.124,0.737,0.424,0.916,0.717,2.124
+knn,0.99,0.797,0.031,0.731,0.306,0.974,0.775,-0.519

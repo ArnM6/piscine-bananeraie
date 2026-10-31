@@ -61,6 +61,33 @@ Constats : modèle trop sûr de lui (seuil calibré à 0,996), et « fusarium »
 (81 inconnues et 12 saines classées fusarium ; le fusarium n'existe pas dans le jeu du Bangladesh).
 Ces constats ont motivé la v2 (découpage par sessions, rejet par distance kNN).
 
+#### Ce que révèlent les métadonnées EXIF (v2.1, 31/10/2026) — biais majeur
+100 % des photos ont une date EXIF, aucune n'a de GPS. **Chaque classe a été photographiée à des dates différentes** :
+
+| Classe | Jours de prise de vue |
+|---|---|
+| sain | 22 et 23/11/2022 |
+| fusarium | 06, 09, 19, 20 et 22/12/2022 |
+| sigatoka | 12 et 13/01/2023 |
+
+La classe est donc **confondue avec la session** (lumière, champ, arrière-plan, appareil). Un modèle peut obtenir
+un excellent score en Tanzanie en reconnaissant la session plutôt que la maladie : c'est pourquoi la validation
+interne (0,99) n'a pas de valeur et que **seul le test au Bangladesh mesure la vraie performance**.
+Découpage appliqué : par jour pour fusarium (5 jours), par blocs de 100 photos consécutives pour sain et sigatoka
+(2 jours seulement chacun, découpage par jour impossible). Validation : sain 640, sigatoka 700, fusarium 584 images.
+
+#### Résultats v2.1 (31/10/2026) — test Bangladesh, MobileNetV3-large pré-entraîné, rejet kNN
+| Métrique | v1 (msp) | **v2.1 (kNN)** |
+|---|---|---|
+| Précision des alertes maladie | 0,95 | **0,99** |
+| Rappel Sigatoka | 0,49 | **0,80** |
+| Fausses alertes sur feuilles saines | 9 % | **3 %** (4/129) |
+| Rejet de l'inconnu | 75 % | **73 %** |
+| Feuilles connues rejetées à tort | 54 % | **31 %** |
+| AUROC connu/inconnu | 0,63 | **0,78** |
+
+Fichiers : `docs/resultats_maladies/` (ablations, méthodes de rejet, découpage complet, planche d'échecs).
+
 ### L2 — Banana leaves and stem (Tanzanie, 2023)
 - Même équipe et même région que L1. **Traité comme la même source** : jamais L1 en train et L2 en test.
 - Usage : éventuellement complément d'entraînement après dédoublonnage, sinon non utilisé.
@@ -74,6 +101,8 @@ Ces constats ont motivé la v2 (découpage par sessions, rejet par distance kNN)
 - **Usage** : **test uniquement**. Sain + Sigatoka = classes connues ; Cordana + Pestalotiopsis = **inconnues** (test du rejet).
 - **Fuites** : le dossier « augmented » est dérivé des originales → **exclu**.
 - **Limites** : Sigatoka noire et jaune non distinguées ; images redimensionnées 224×224 dans le jeu traité.
+- **Qualité des étiquettes** : au moins une feuille « healthy » présente des taches visibles, et elle apparaît
+  en double dans le jeu (voir `cas_echec.png`). Quelques erreurs de « fausses alertes » viennent sans doute d'étiquettes discutables.
 
 ### M1 — Modèle Courageous Land `banana.pth`
 - Entraîné sur la ferme Raízes (São Paulo), orthophotos RTK ~1,66 cm/pixel, 133 étiquettes.
