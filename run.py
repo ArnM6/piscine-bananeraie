@@ -3,9 +3,9 @@
 Usage :
     python run.py --images DOSSIER --parcelles parcelles.geojson --out resultats/
 
-Pour chaque GeoTIFF RGB du dossier :
+Pour chaque GeoTIFF du dossier (RGB ou multispectral 5 bandes) :
   1. lit l'image et les parcelles (reprojetées dans le système de l'image)
-  2. calcule la carte de vigueur (ExG, VARI) et les zones anormalement faibles
+  2. calcule les indices (NDVI, NDRE si multispectral ; ExG, VARI si RGB) et la carte de vigueur relative
   3. détecte les pieds (baseline : maxima locaux de verdure)
   4. écrit les sorties géospatiales + le bulletin par parcelle
 """
@@ -24,7 +24,9 @@ def main():
     parser.add_argument("--images", required=True, help="dossier contenant les GeoTIFF")
     parser.add_argument("--parcelles", required=True, help="fichier GeoJSON des parcelles")
     parser.add_argument("--out", required=True, help="dossier de sortie")
+    parser.add_argument("--bandes", help="ordre des bandes, ex : bleu,vert,rouge,pir,rededge (défaut : selon leur nombre)")
     args = parser.parse_args()
+    ordre_bandes = args.bandes.split(",") if args.bandes else None
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -41,24 +43,26 @@ def main():
         debut = time.time()
         print(f"[image] {chemin.name}")
 
-        img = io.lire_image(chemin)
+        img = io.lire_image(chemin, ordre_bandes)
         parcelles = io.lire_parcelles(args.parcelles, img["crs"])
 
-        # 1. Vigueur
-        exg = vigueur.exg(img["rgb"])
-        vari = vigueur.vari(img["rgb"])
+        # 1. Vigueur : indices, puis écart à la médiane de la parcelle, sur la végétation seulement
+        cartes, principal, vegetation = vigueur.indices(img)
         masque_parcelles = io.rasteriser_parcelles(parcelles, img)
-        exg_lisse = vigueur.lisser(exg, img["taille_pixel"], rayon_m=2.0)
-        anomalie = vigueur.anomalie_par_parcelle(exg_lisse, masque_parcelles)
-        io.ecrire_geotiff(out / f"{chemin.stem}_exg.tif", exg, img)
-        io.ecrire_geotiff(out / f"{chemin.stem}_vari.tif", vari, img)
+        lisse = vigueur.lisser(cartes[principal], img["taille_pixel"], rayon_m=2.0, masque=vegetation)
+        anomalie = vigueur.anomalie_par_parcelle(lisse, masque_parcelles, vegetation)
+        for nom, carte in cartes.items():
+            io.ecrire_geotiff(out / f"{chemin.stem}_{nom}.tif", carte, img)
         io.ecrire_geotiff(out / f"{chemin.stem}_vigueur_anomalie.tif", anomalie, img)
+        print(f"   bandes : {', '.join(img['canaux'])} | indice de vigueur : {principal.upper()}")
 
-        # 2. Comptage des pieds
-        pieds = comptage.detecter_pieds(exg, img)
+        # 2. Comptage des pieds (sur le NDVI si disponible : meilleur contraste plant / sol que l'ExG)
+        nom_comptage = "ndvi" if "ndvi" in cartes else "exg"
+        pieds = comptage.detecter_pieds(cartes[nom_comptage], img, nom_comptage)
         pieds = comptage.rattacher_aux_parcelles(pieds, parcelles)
         pieds["image"] = chemin.name
         tous_les_pieds.append(pieds)
+        del cartes, lisse
 
         # 3. Statistiques par parcelle pour le bulletin
         stats = bulletin.stats_parcelles(parcelles, pieds, anomalie, masque_parcelles, img)

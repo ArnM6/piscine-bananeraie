@@ -9,11 +9,15 @@ _Résumé du carnet ; découpage par pays/site ; fuites évitées._
 ## 3. Comptage des pieds
 | Approche | F1 (1 m) | Erreur comptage | Taille | Temps CPU / ha |
 |---|---|---|---|---|
-| Baseline maxima locaux (ExG) | | | 0 Mo | |
+| Baseline maxima locaux (NDVI lissé) — zone test Guangxi, 8 cm/px | **0,17** (P 0,47 / R 0,10) | −78 % | 0 Mo | 2,4 s/ha |
 | Détecteur pré-entraîné (Courageous Land) | | | | |
 | Détecteur affiné | | | | |
 
-Effet de la résolution : _résultats à 2, 5, 10 cm/pixel._
+Vérité terrain : 6 carrés de 15 × 15 m annotés à la main (46 pieds en zone ouest pour le réglage, 69 en zone est
+pour le test). La baseline échoue sur canopée fermée : le NDVI y est uniforme et le centre des touffes ne forme
+pas de « bosse », d'où 3 à 4 fois trop peu de détections → justifie un détecteur appris.
+
+Effet de la résolution : _résultats à 8, 16, 24 cm/pixel._
 
 ## 4. Vigueur et stress hydrique
 _Indices choisis, justification physique, comparaison saison sèche / humide._

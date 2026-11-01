@@ -12,6 +12,7 @@ Pour chaque source : provenance, licence, résolution, date, composition, usage
 | L2 | Mduma et al. 2023 — Banana leaves & stem (Data in Brief, PMC10333424) | Feuilles + tiges, smartphone | Tanzanie | CC BY (article) | **Même source que L1** (voir fuites) | exclu volontairement |
 | L3 | BananaLSD — Arman et al. 2023 (Mendeley 10.17632/9tb7k297ff.1) | Feuilles, 3 smartphones | Bangladesh | CC BY 4.0 | Maladies : **test** (autre pays) + classes inconnues | ✅ utilisé |
 | D1 | DS-v1 / DS-v2 — UAV Black Sigatoka (Zenodo 10.5281/zenodo.20945958) | Tuiles drone RGB + boîtes YOLO | à vérifier | CC BY 4.0 | Drone : à évaluer (contenu des boîtes ?) | à vérifier |
+| D2 | Ye et al. 2023 — UAV multispectral images for banana Fusarium wilt survey (Science Data Bank, DOI 10.57760/sciencedb.07000, V2) | Orthomosaïque drone multispectrale + points terrain + contour | Chine (Guangxi) | CC BY 4.0 | Socle : vigueur, comptage, cohérence avec la référence terrain | ✅ utilisé |
 | M1 | Courageous Land — agroforestry-inventory, `banana.pth` (Hugging Face) | Modèle pré-entraîné | Brésil | Poids CC BY 4.0, code GPL-3.0 | Comptage : détecteur pré-entraîné | à tester |
 | S1 | Sentinel-2 L2A (Copernicus Data Space) | Satellite, 10–20 m | à choisir | Licence Copernicus (libre) | Vigueur NDVI, stress NDMI | à télécharger |
 | T1 | Plantation synthétique (`scripts/creer_donnees_test.py`) | Simulation | — | — | Tests de la chaîne uniquement | ✅ |
@@ -103,6 +104,33 @@ Fichiers : `docs/resultats_maladies/` (ablations, méthodes de rejet, découpage
 - **Limites** : Sigatoka noire et jaune non distinguées ; images redimensionnées 224×224 dans le jeu traité.
 - **Qualité des étiquettes** : au moins une feuille « healthy » présente des taches visibles, et elle apparaît
   en double dans le jeu (voir `cas_echec.png`). Quelques erreurs de « fausses alertes » viennent sans doute d'étiquettes discutables.
+
+### D2 — Bananeraie de Long'an, Guangxi (drone multispectral)
+- **Citation** : Huichun YE, Senzheng CHEN, Anting GUO, et al. *A dataset of UAV multispectral images for banana
+  Fusarium wilt survey* [DS/OL]. V2. Science Data Bank, 2023. https://doi.org/10.57760/sciencedb.07000
+- **Licence** : CC BY 4.0 (vérifiée sur la page du jeu, publié le 07/06/2023).
+- **Provenance** : plantation de bananiers du district de Long'an, Guangxi, Chine.
+- **Capteur / résolution** : drone multispectral, vol à 120 m, ≈ 8 cm/pixel (selon l'article associé, *China Scientific Data* 2024).
+- **Fichiers** : `1_UAV multispectral reflectance.zip` (585,5 Mo), `2_Ground survey data of banana Fusarium wilt.zip`
+  (6,6 Ko, points GPS de plants malades recalés au centre des plants), `3_Boundary of banana planting region.zip` (3,2 Ko).
+- **Usage prévu** : carte de vigueur (NDVI / NDRE), cohérence des zones faibles avec les plants malades relevés au sol,
+  comptage des pieds (annotation manuelle d'une zone dans QGIS, test sur une autre zone).
+- **Découpage** : par zones géographiques séparées de la plantation, jamais par tuiles aléatoires.
+- **Image** : 5 bandes en réflectance (float32), 0,08 m/pixel, UTM 48N (EPSG:32648), 14 420 × 7 885 px.
+  **Ordre des bandes non documenté** : déduit des spectres de la végétation (bande 4 la plus réfléchissante = PIR,
+  bande 5 entre rouge et PIR = red-edge) → Bleu, Vert, Rouge, PIR, Red-edge (ordre des caméras MicaSense RedEdge).
+- **Contour** : un polygone de 18,06 ha. **Points terrain** : 80 (40 plants sains `健康植株`, 40 atteints de fusariose
+  `枯萎病植株`), relevés au GPS en décembre 2022 (d'après l'historique ArcGIS des fichiers).
+- **Préparation** (`scripts/preparer_guangxi.py`) : découpe sur le contour + 10 m, conversion en uint16
+  (réflectance × 10 000, compression deflate : 2,3 Go → 365 Mo), grille de 21 parcelles d'≈ 1 ha.
+- **Découpage honnête** : deux zones séparées par la médiane est-ouest — `ouest_reglage` (10 parcelles,
+  35 points terrain) pour régler les méthodes, `est_test` (11 parcelles, 42 points) pour les tester. 3 points
+  tombent dans des morceaux de parcelle trop petits (< 0,3 ha) et sont hors parcelles.
+- **Annotation du comptage** : 4 carrés de 30 × 30 m annotés à la main dans QGIS (un pied = un point au centre de
+  la touffe) — O1, O2 (zone ouest) et E1, E2 (zone est). E1 contient un bosquet d'arbres non-bananiers (piège).
+- **Limites** : date de vol exacte non fournie ; pas de bande thermique ; une seule date (pas de suivi temporel).
+  Baseline de comptage par maxima locaux du NDVI : ≈ 200 pieds/ha détectés alors que la canopée en montre
+  visuellement 3 à 4 fois plus → la canopée fermée rend le NDVI uniforme et les centres de touffes invisibles.
 
 ### M1 — Modèle Courageous Land `banana.pth`
 - Entraîné sur la ferme Raízes (São Paulo), orthophotos RTK ~1,66 cm/pixel, 133 étiquettes.

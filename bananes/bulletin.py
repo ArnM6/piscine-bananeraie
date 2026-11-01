@@ -32,7 +32,9 @@ def stats_parcelles(parcelles, pieds, anomalie, masque_parcelles, img):
         if surface_ha == 0:
             continue  # parcelle hors de cette image
         n_pieds = int((pieds["parcelle_id"] == parcelle.parcelle_id).sum())
-        part_faible = float(np.mean(anomalie[dedans] < SEUIL_FAIBLE))
+        valeurs = anomalie[dedans]
+        valeurs = valeurs[np.isfinite(valeurs)]            # végétation seulement (pistes, sol exclus)
+        part_faible = float(np.mean(valeurs < SEUIL_FAIBLE)) if len(valeurs) else 0.0
         lignes.append({
             "parcelle_id": parcelle.parcelle_id,
             "surface_ha": round(surface_ha, 3),
