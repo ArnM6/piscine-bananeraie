@@ -1,0 +1,80 @@
+{
+ "nom": "refo_8cm",
+ "depart": "weecology/deepforest-tree",
+ "duree_entrainement_s": 1841,
+ "seuil_choisi_sur_carres_vus": false,
+ "guangxi_8cm": {
+  "seuil": 0.1,
+  "ouest": {
+   "precision": 0.5,
+   "rappel": 0.196,
+   "f1": 0.281,
+   "n_vrai": 46,
+   "n_pred": 18,
+   "erreur_comptage": -0.609,
+   "erreur_abs_moy_par_carre": 14.0
+  },
+  "est_test": {
+   "precision": 0.577,
+   "rappel": 0.217,
+   "f1": 0.316,
+   "n_vrai": 69,
+   "n_pred": 26,
+   "erreur_comptage": -0.623,
+   "erreur_abs_moy_par_carre": 10.8
+  }
+ },
+ "reforestree_validation": {
+  "4cm": {
+   "seuil": 0.25,
+   "precision": 0.182,
+   "rappel": 0.326,
+   "f1": 0.233,
+   "n_vrai": 221,
+   "n_pred": 396,
+   "erreur_comptage": 0.792,
+   "erreur_abs_moy_par_carre": 11.8
+  },
+  "8cm": {
+   "seuil": 0.25,
+   "precision": 0.406,
+   "rappel": 0.421,
+   "f1": 0.413,
+   "n_vrai": 221,
+   "n_pred": 229,
+   "erreur_comptage": 0.036,
+   "erreur_abs_moy_par_carre": 4.0
+  },
+  "16cm": {
+   "seuil": 0.05,
+   "precision": 0.267,
+   "rappel": 0.244,
+   "f1": 0.255,
+   "n_vrai": 221,
+   "n_pred": 202,
+   "erreur_comptage": -0.086,
+   "erreur_abs_moy_par_carre": 6.1
+  }
+ },
+ "guangxi_16cm": {
+  "seuil": 0.1,
+  "ouest": {
+   "precision": 0.0,
+   "rappel": 0.0,
+   "f1": 0.0,
+   "n_vrai": 46,
+   "n_pred": 0,
+   "erreur_comptage": -1.0,
+   "erreur_abs_moy_par_carre": 23.0
+  },
+  "est_test": {
+   "precision": 0.0,
+   "rappel": 0.0,
+   "f1": 0.0,
+   "n_vrai": 69,
+   "n_pred": 0,
+   "erreur_comptage": -1.0,
+   "erreur_abs_moy_par_carre": 17.2
+  }
+ }
+}

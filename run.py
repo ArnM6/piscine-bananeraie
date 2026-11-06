@@ -6,7 +6,7 @@ Usage :
 Pour chaque GeoTIFF du dossier (RGB ou multispectral 5 bandes) :
   1. lit l'image et les parcelles (reprojetées dans le système de l'image)
   2. calcule les indices (NDVI, NDRE si multispectral ; ExG, VARI si RGB) et la carte de vigueur relative
-  3. détecte les pieds (baseline : maxima locaux de verdure)
+  3. détecte les pieds : détecteur appris (RetinaNet / DeepForest, par défaut) ou baseline (maxima locaux)
   4. écrit les sorties géospatiales + le bulletin par parcelle
 """
 import argparse
@@ -25,6 +25,9 @@ def main():
     parser.add_argument("--parcelles", required=True, help="fichier GeoJSON des parcelles")
     parser.add_argument("--out", required=True, help="dossier de sortie")
     parser.add_argument("--bandes", help="ordre des bandes, ex : bleu,vert,rouge,pir,rededge (défaut : selon leur nombre)")
+    parser.add_argument("--comptage", choices=["affine", "robuste", "baseline"], default="affine",
+                        help="affine : meilleur sur une monoculture dense type Guangxi (défaut) ; "
+                             "robuste : plus stable sur un site très différent ; baseline : maxima locaux, sans réseau")
     args = parser.parse_args()
     ordre_bandes = args.bandes.split(",") if args.bandes else None
 
@@ -34,6 +37,16 @@ def main():
     images = io.lister_images(args.images)
     if not images:
         raise SystemExit(f"Aucun GeoTIFF trouvé dans {args.images}")
+
+    reseau, seuil = None, None
+    if args.comptage != "baseline":
+        try:
+            from bananes import detecteur
+            reseau, seuil = detecteur.charger(args.comptage)
+            print(f"[comptage] détecteur « {args.comptage} » ({detecteur.MODELES[args.comptage]}), seuil {seuil}")
+        except (ImportError, FileNotFoundError) as e:
+            print(f"[comptage] détecteur indisponible ({e}) -> baseline")
+            args.comptage = "baseline"
 
     tous_les_pieds = []
     toutes_les_stats = []
@@ -56,9 +69,12 @@ def main():
         io.ecrire_geotiff(out / f"{chemin.stem}_vigueur_anomalie.tif", anomalie, img)
         print(f"   bandes : {', '.join(img['canaux'])} | indice de vigueur : {principal.upper()}")
 
-        # 2. Comptage des pieds (sur le NDVI si disponible : meilleur contraste plant / sol que l'ExG)
-        nom_comptage = "ndvi" if "ndvi" in cartes else "exg"
-        pieds = comptage.detecter_pieds(cartes[nom_comptage], img, nom_comptage)
+        # 2. Comptage des pieds
+        if reseau is not None:
+            pieds = detecteur.detecter_pieds(img, reseau, seuil)
+        else:   # baseline : sur le NDVI si disponible (meilleur contraste plant / sol que l'ExG)
+            nom_comptage = "ndvi" if "ndvi" in cartes else "exg"
+            pieds = comptage.detecter_pieds(cartes[nom_comptage], img, nom_comptage)
         pieds = comptage.rattacher_aux_parcelles(pieds, parcelles)
         pieds["image"] = chemin.name
         tous_les_pieds.append(pieds)

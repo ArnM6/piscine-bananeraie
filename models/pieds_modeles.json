@@ -1,0 +1,20 @@
+{
+  "refo_multires_affine_O": {
+    "choix": "affine",
+    "seuil": 0.55,
+    "seuil_regle_sur": "carrés ouest de Guangxi (O1, O2), vus à l'entraînement",
+    "resolution_m": 0.08,
+    "f1_guangxi_est_8cm": 0.521,
+    "f1_reforestree_4_8_16cm": [0.18, 0.312, 0.166],
+    "entraine_sur": "DeepForest arbres -> ReforesTree (Équateur, 4/8/16 cm) -> Guangxi carrés O1, O2 (46 pieds)"
+  },
+  "refo_multires": {
+    "choix": "robuste",
+    "seuil": 0.1,
+    "seuil_regle_sur": "carrés ouest de Guangxi (O1, O2), non vus à l'entraînement",
+    "resolution_m": 0.08,
+    "f1_guangxi_est_8cm": 0.414,
+    "f1_reforestree_4_8_16cm": [0.399, 0.372, 0.407],
+    "entraine_sur": "DeepForest arbres -> ReforesTree (Équateur, 4/8/16 cm)"
+  }
+}

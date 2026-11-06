@@ -1,0 +1,80 @@
+{
+ "nom": "arbres_affine_O",
+ "depart": "weecology/deepforest-tree",
+ "duree_entrainement_s": 125,
+ "seuil_choisi_sur_carres_vus": true,
+ "guangxi_8cm": {
+  "seuil": 0.55,
+  "ouest": {
+   "precision": 0.76,
+   "rappel": 0.413,
+   "f1": 0.535,
+   "n_vrai": 46,
+   "n_pred": 25,
+   "erreur_comptage": -0.457,
+   "erreur_abs_moy_par_carre": 10.5
+  },
+  "est_test": {
+   "precision": 0.571,
+   "rappel": 0.406,
+   "f1": 0.475,
+   "n_vrai": 69,
+   "n_pred": 49,
+   "erreur_comptage": -0.29,
+   "erreur_abs_moy_par_carre": 9.0
+  }
+ },
+ "reforestree_validation": {
+  "4cm": {
+   "seuil": 0.5,
+   "precision": 0.017,
+   "rappel": 0.308,
+   "f1": 0.033,
+   "n_vrai": 221,
+   "n_pred": 3946,
+   "erreur_comptage": 16.855,
+   "erreur_abs_moy_par_carre": 232.8
+  },
+  "8cm": {
+   "seuil": 0.4,
+   "precision": 0.047,
+   "rappel": 0.33,
+   "f1": 0.083,
+   "n_vrai": 221,
+   "n_pred": 1545,
+   "erreur_comptage": 5.991,
+   "erreur_abs_moy_par_carre": 82.8
+  },
+  "16cm": {
+   "seuil": 0.05,
+   "precision": 0.034,
+   "rappel": 0.385,
+   "f1": 0.062,
+   "n_vrai": 221,
+   "n_pred": 2522,
+   "erreur_comptage": 10.412,
+   "erreur_abs_moy_par_carre": 143.8
+  }
+ },
+ "guangxi_16cm": {
+  "seuil": 0.55,
+  "ouest": {
+   "precision": 0.8,
+   "rappel": 0.087,
+   "f1": 0.157,
+   "n_vrai": 46,
+   "n_pred": 5,
+   "erreur_comptage": -0.891,
+   "erreur_abs_moy_par_carre": 20.5
+  },
+  "est_test": {
+   "precision": 0.455,
+   "rappel": 0.072,
+   "f1": 0.125,
+   "n_vrai": 69,
+   "n_pred": 11,
+   "erreur_comptage": -0.841,
+   "erreur_abs_moy_par_carre": 14.5
+  }
+ }
+}

@@ -10,6 +10,7 @@ models/*
 !models/*.onnx
 !models/*.json
 !models/*.banque.npy
+!models/pieds_*.pt
 # Notebook : sorties de test local
 notebooks/colab_travail/
 # Python

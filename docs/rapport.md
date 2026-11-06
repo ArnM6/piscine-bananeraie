@@ -7,17 +7,42 @@ _Socle + modules choisis (maladies, stress hydrique) et pourquoi._
 _Résumé du carnet ; découpage par pays/site ; fuites évitées._
 
 ## 3. Comptage des pieds
-| Approche | F1 (1 m) | Erreur comptage | Taille | Temps CPU / ha |
-|---|---|---|---|---|
-| Baseline maxima locaux (NDVI lissé) — zone test Guangxi, 8 cm/px | **0,17** (P 0,47 / R 0,10) | −78 % | 0 Mo | 2,4 s/ha |
-| Détecteur pré-entraîné (Courageous Land) | | | | |
-| Détecteur affiné | | | | |
+Vérité terrain : 6 carrés de 15 × 15 m annotés à la main dans QGIS, un point au centre de chaque touffe
+(pied mère + rejets = 1 pied). 46 pieds en zone **ouest** (réglage, affinage), 69 en zone **est** (test, jamais vue).
+Validation hors site : ReforesTree, site d'Équateur exclu de l'entraînement (221 bananiers).
 
-Vérité terrain : 6 carrés de 15 × 15 m annotés à la main (46 pieds en zone ouest pour le réglage, 69 en zone est
-pour le test). La baseline échoue sur canopée fermée : le NDVI y est uniforme et le centre des touffes ne forme
-pas de « bosse », d'où 3 à 4 fois trop peu de détections → justifie un détecteur appris.
+**Détecteur** : RetinaNet ResNet-50, l'architecture de DeepForest, à partir de ses poids « arbres ».
 
-Effet de la résolution : _résultats à 8, 16, 24 cm/pixel._
+| Approche (Guangxi est, 8 cm/px) | Précision | Rappel | F1 (1 m) | Erreur comptage | F1 hors site (ReforesTree 8 cm) |
+|---|---|---|---|---|---|
+| Baseline maxima locaux (NDVI lissé) | 0,47 | 0,10 | 0,17 | −78 % | — |
+| DeepForest brut | 0,28 | 0,52 | 0,36 | +87 % | 0,10 |
+| + ReforesTree à 8 cm | 0,58 | 0,22 | 0,32 | −62 % | 0,41 |
+| + ReforesTree à 4, 8, 16 cm (**robuste**) | 0,41 | 0,42 | 0,41 | +3 %* | 0,37 |
+| **+ affiné sur Guangxi ouest (affine, par défaut)** | 0,62 | 0,45 | **0,52** | −28 % | 0,31 |
+| DeepForest affiné sur Guangxi ouest seul | 0,57 | 0,41 | 0,48 | −29 % | 0,08 |
+
+\* erreurs qui se compensent entre carrés (erreur absolue moyenne : 7,5 pieds par carré).
+
+Sobriété : 64,6 Mo, **71 s/ha sur 2 cœurs CPU** (≈ 20 min pour les 18 ha), sans GPU. Affinage : 2 min sur GPU T4.
+
+À retenir :
+- le F1 est **multiplié par 3** par rapport à la baseline, qui échoue sur canopée fermée (NDVI uniforme) ;
+- l'affinage sur 46 pieds est le gain le moins cher, mais il **spécialise** : hors site, le F1 tombe de 0,37 à 0,31
+  (et à 0,17–0,18 à 4 et 16 cm). Sans ReforesTree, le modèle affiné surcompte 7 à 18 fois ailleurs ;
+- d'où **deux modèles** dans `run.py` : `affine` pour une monoculture dense proche de Guangxi, `robuste` pour un
+  site inconnu très différent.
+
+**Effet de la résolution** (vol 2 × plus haut, même seuil) :
+
+| Modèle | Guangxi 8 cm | Guangxi 16 cm | ReforesTree 4 / 8 / 16 cm |
+|---|---|---|---|
+| robuste | 0,41 | 0,17 | 0,40 / 0,37 / 0,41 |
+| affine | 0,52 | 0,13 | 0,18 / 0,31 / 0,17 |
+
+La résolution utile dépend de la **densité** : 16 cm suffit pour des bananiers isolés (ReforesTree), pas pour une
+monoculture fermée, où les touffes voisines se confondent (même sans seuil, 35 détections pour 69 pieds).
+**Recommandation de vol : 8 cm/pixel ou plus fin** sur une bananeraie dense.
 
 ## 4. Vigueur et stress hydrique
 _Indices choisis, justification physique, comparaison saison sèche / humide._
@@ -51,6 +76,14 @@ servent de maladies **inconnues**. Seuil de rejet réglé sur la validation Tanz
 - la version **small** fait presque aussi bien, 2× plus légère et 2,5× plus rapide : bon candidat pour la station de terrain.
 
 ## 6. Analyse des échecs
+_Comptage (voir `docs/resultats_comptage/exemples_detection.png`)_ :
+- **Arbres non-bananiers comptés** (E1, bosquet) : 11 détections pour 2 bananiers, contre 41 pour DeepForest
+  brut. L'affinage réduit le piège sans le supprimer ; plus d'exemples négatifs annotés aideraient.
+- **Touffes collées manquées** (E3, E4) : ≈ 12 détections pour 24 pieds. Sur canopée fermée, deux touffes
+  voisines forment une seule tache : sous-comptage systématique.
+- **Densité sur la plantation** : ≈ 450 pieds/ha prédits, contre ≈ 850/ha dans les carrés annotés (choisis dans des
+  zones bien couvertes) : le sous-comptage réel est probablement plus fort que −28 %.
+
 _Maladies (voir `docs/resultats_maladies/cas_echec.png`)_ :
 - **Sigatoka rejetées** (« je ne sais pas ») : photos du Bangladesh plus ternes et grisâtres que celles de Tanzanie.
   Le modèle préfère s'abstenir plutôt que se tromper : c'est le comportement honnête attendu.
@@ -63,7 +96,11 @@ _Maladies (voir `docs/resultats_maladies/cas_echec.png`)_ :
   seul le test dans un autre pays le révèle.
 
 ## 7. Limites et passage en conditions réelles
-_Écart feuilles au sol / drone ; transfert entre sites._
+- **Comptage** : 69 pieds de test seulement (l'écart de +0,05 entre affinage avec et sans ReforesTree n'est pas
+  significatif) ; seuil des modèles affinés choisi sur les carrés ouest, déjà vus à l'entraînement ; une seule
+  plantation dense pour l'affinage. Annoter 2 ou 3 carrés sur chaque nouveau site et affiner (2 min) est la voie
+  la plus rentable.
+- _Écart feuilles au sol / drone : à compléter._
 
 ## Bonus — Plan d'intervention
 _Parcelles à visiter cette semaine, ordre, gain de temps._

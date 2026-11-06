@@ -13,7 +13,9 @@ Pour chaque source : provenance, licence, résolution, date, composition, usage
 | L3 | BananaLSD — Arman et al. 2023 (Mendeley 10.17632/9tb7k297ff.1) | Feuilles, 3 smartphones | Bangladesh | CC BY 4.0 | Maladies : **test** (autre pays) + classes inconnues | ✅ utilisé |
 | D1 | DS-v1 / DS-v2 — UAV Black Sigatoka (Zenodo 10.5281/zenodo.20945958) | Tuiles drone RGB + boîtes YOLO | à vérifier | CC BY 4.0 | Drone : à évaluer (contenu des boîtes ?) | à vérifier |
 | D2 | Ye et al. 2023 — UAV multispectral images for banana Fusarium wilt survey (Science Data Bank, DOI 10.57760/sciencedb.07000, V2) | Orthomosaïque drone multispectrale + points terrain + contour | Chine (Guangxi) | CC BY 4.0 | Socle : vigueur, comptage, cohérence avec la référence terrain | ✅ utilisé |
-| M1 | Courageous Land — agroforestry-inventory, `banana.pth` (Hugging Face) | Modèle pré-entraîné | Brésil | Poids CC BY 4.0, code GPL-3.0 | Comptage : détecteur pré-entraîné | à tester |
+| D3 | ReforesTree — Reiersen et al. 2022 (Zenodo 10.5281/zenodo.6813783) | Orthophotos drone RGB 2 cm + boîtes d'arbres | Équateur | CC BY 4.0 (à vérifier sur Zenodo) | Comptage : apprendre « bananier » + **validation hors site** | ✅ utilisé |
+| M1 | Courageous Land — agroforestry-inventory, `banana.pth` (Hugging Face) | Modèle pré-entraîné | Brésil | Poids CC BY 4.0, code GPL-3.0 | Comptage : détecteur pré-entraîné | non retenu (voir fiche) |
+| M2 | DeepForest `weecology/deepforest-tree` (Hugging Face) | Détecteur RetinaNet de couronnes d'arbres | États-Unis | MIT (à vérifier sur Hugging Face) | Comptage : point de départ du détecteur | ✅ utilisé |
 | S1 | Sentinel-2 L2A (Copernicus Data Space) | Satellite, 10–20 m | à choisir | Licence Copernicus (libre) | Vigueur NDVI, stress NDMI | à télécharger |
 | T1 | Plantation synthétique (`scripts/creer_donnees_test.py`) | Simulation | — | — | Tests de la chaîne uniquement | ✅ |
 
@@ -132,11 +134,31 @@ Fichiers : `docs/resultats_maladies/` (ablations, méthodes de rejet, découpage
   Baseline de comptage par maxima locaux du NDVI : ≈ 200 pieds/ha détectés alors que la canopée en montre
   visuellement 3 à 4 fois plus → la canopée fermée rend le NDVI uniforme et les centres de touffes invisibles.
 
+### D3 — ReforesTree (Équateur)
+- **Citation** : Reiersen et al., *ReforesTree: A Dataset for Estimating Tropical Forest Carbon Stock with
+  Deep Learning and Aerial Imagery*, AAAI 2022. Zenodo 10.5281/zenodo.6813783 (archive 7,5 Go, md5 contrôlé).
+- **Contenu** : 6 sites d'agroforesterie (cacao, agrumes, bananiers…), orthophotos RGB ≈ 2 cm/pixel,
+  boîtes autour de chaque arbre avec son espèce. Seules les boîtes `banana` sont des cibles ; les autres
+  arbres restent dans l'image comme **exemples négatifs**.
+- **Préparation** : réduction à 4, 8 et 16 cm/pixel (moyenne par blocs = même caméra volant 2, 4, 8 fois plus haut).
+  Cinq tuiles écartées comme le recommandent les auteurs (annotations incomplètes).
+- **Découpage par site** (`docs/resultats_comptage/decoupage_reforestree.csv`) : 5 sites en entraînement
+  (1 283 bananiers), **Carlos Vera Arteaga en validation** (221 bananiers, 522 autres arbres), jamais vu.
+- **Limite** : bananiers isolés sous couvert agroforestier, très différents d'une monoculture fermée (Guangxi).
+
+### M2 — DeepForest (point de départ du détecteur)
+- RetinaNet ResNet-50 + FPN pré-entraîné sur des couronnes d'arbres de forêts américaines (~10 cm/pixel).
+  Poids chargés directement depuis Hugging Face ; boucle d'entraînement écrite dans le notebook.
+- Utilisé brut (`arbres_brut`) puis affiné : sur ReforesTree, puis sur les carrés O1, O2 de Guangxi.
+- **Fuite évitée** : les carrés de test E1–E4 ne servent ni à l'entraînement ni au réglage du seuil.
+
 ### M1 — Modèle Courageous Land `banana.pth`
 - Entraîné sur la ferme Raízes (São Paulo), orthophotos RTK ~1,66 cm/pixel, 133 étiquettes.
 - Performances publiées sur leur site : précision 0,59, rappel 0,93 (appariement à 1 m).
 - Défaut connu : compte les rejets d'une même touffe comme des pieds distincts → surcomptage.
 - **Usage documenté** : inférence seule, puis fusion des détections < 1,4 m ; évalué sur nos propres annotations.
+- **Non retenu** : entraîné à 1,7 cm/pixel (contre 8 cm à Guangxi) et sur 133 étiquettes ; DeepForest peut être
+  affiné avec nos annotations et ReforesTree, ce qui teste directement l'effet de la résolution.
 
 ### S1 — Sentinel-2
 - Bandes utilisées : B04 (rouge), B08 (PIR), B05 (red-edge) et B11 (SWIR) pour NDMI.

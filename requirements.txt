@@ -6,7 +6,7 @@ geopandas>=0.14
 shapely>=2.0
 pillow>=10.0
 onnxruntime>=1.17   # inférence CPU du modèle maladies
+torch>=2.2            # détecteur de pieds (CPU suffit : ~70 s/ha sur 2 cœurs)
+torchvision>=0.17
 # Modules à venir (décommenter quand on les branche) :
-# torch, torchvision     # entraînement maladies (Colab)
-# deepforest             # détecteur de couronnes pré-entraîné
 # streamlit, folium      # démo

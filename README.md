@@ -4,8 +4,8 @@ Piscine Intelligence Lab ECE × Horama — chaîne qui transforme des images aé
 d'une plantation en **carte des pieds**, **carte de vigueur**, **alertes** et
 **bulletin par parcelle**.
 
-> État : socle en place (lecture GeoTIFF, parcelles, vigueur RGB, comptage baseline,
-> bulletin). Modules maladies et stress hydrique en cours.
+> État : socle en place (lecture GeoTIFF RGB ou multispectral, parcelles, vigueur, comptage par
+> détecteur appris, bulletin) et module maladies. Stress hydrique en cours.
 
 ## Installation
 
@@ -28,6 +28,15 @@ python run.py --images DOSSIER --parcelles parcelles.geojson --out resultats/
 - `DOSSIER` : un ou plusieurs GeoTIFF RGB (orthomosaïques), **en projection métrique** (UTM).
 - `parcelles.geojson` : polygones des parcelles (n'importe quel système, reprojeté
   automatiquement). Une colonne `parcelle_id` est utilisée si elle existe.
+- `--comptage` : méthode de comptage des pieds.
+  - `affine` (défaut) : détecteur affiné sur Guangxi, le meilleur sur une **monoculture dense** (F1 0,52) ;
+  - `robuste` : détecteur sans Guangxi, plus stable sur un **site très différent** (F1 0,37 à 0,41 en Équateur) ;
+  - `baseline` : maxima locaux de verdure, sans réseau (F1 0,17 sur canopée fermée).
+
+Le détecteur a besoin de `models/pieds_refo_multires_affine_O.pt` et/ou `models/pieds_refo_multires.pt`
+(sortis de `notebooks/comptage_colab.ipynb`, dossier `MyDrive/piscine-bananeraie/models/`). S'ils manquent,
+la chaîne repasse automatiquement en `baseline`. L'image est ramenée à **8 cm/pixel** (résolution
+d'entraînement) ; au-delà de 10 cm/pixel, un avertissement signale que le comptage n'est plus fiable.
 
 ### Test rapide sans données réelles
 
@@ -75,6 +84,7 @@ bananes/
   io.py                    lecture/écriture GeoTIFF, parcelles
   vigueur.py               ExG, VARI, anomalie relative par parcelle
   comptage.py              détection des pieds (baseline maxima locaux)
+  detecteur.py             détection des pieds par RetinaNet (DeepForest affiné), CPU
   bulletin.py              statistiques, alertes, bulletin
   maladies.py              classifieur de feuilles ONNX avec rejet de l'inconnu
 scripts/
@@ -83,12 +93,14 @@ scripts/
   classer_feuilles.py      classe un dossier de photos de feuilles
 notebooks/
   maladies_colab.ipynb     entraînement maladies (Colab)
+  comptage_colab.ipynb     entraînement et évaluation du détecteur de pieds (Colab)
+  build_comptage.py        source lisible du notebook comptage
   build_notebook.py        source lisible du notebook (le régénère)
 docs/
   carnet_de_donnees.md     sources, licences, résolution, découpage, fuites
   rapport.md               rapport (4 pages max)
 data/README.md             où télécharger chaque jeu de données
-models/                    poids des modèles (ONNX)
+models/                    poids des modèles (ONNX maladies, .pt comptage + pieds_modeles.json)
 ```
 
 ## Données et modèles pré-entraînés
