@@ -45,7 +45,30 @@ monoculture fermée, où les touffes voisines se confondent (même sans seuil, 3
 **Recommandation de vol : 8 cm/pixel ou plus fin** sur une bananeraie dense.
 
 ## 4. Vigueur et stress hydrique
-_Indices choisis, justification physique, comparaison saison sèche / humide._
+**Pourquoi Sentinel-2** : l'eau liquide des feuilles absorbe le SWIR (B11, 1,6 µm) ; le PIR (B8A) est réfléchi par la
+structure des feuilles et peu absorbé par l'eau. NDMI = (B8A − B11)/(B8A + B11). Le drone n'a pas de SWIR ni de thermique.
+Le bananier (feuilles immenses, racines superficielles) réagit vite au manque d'eau : c'est un signal précoce et réparable
+(irrigation).
+
+**Piège** : le NDMI baisse aussi quand il y a moins de feuilles. On retire la part expliquée par le NDVI
+(droite ajustée sur toutes les parcelles × dates) ; le résidu est l'eau à quantité de feuilles égale.
+
+**Alerte** : chaque parcelle est comparée aux autres **à la même date** (écart à la médiane / MAD, plancher 0,01) : pluie,
+saison et atmosphère s'annulent. Alerte si z < −2 sur **2 dates claires consécutives**. Une sécheresse générale se lit sur la
+série de la plantation, pas comme une alerte par parcelle.
+
+**Vérifications** (Guangxi, 2021–2023, _résultats à reporter depuis `docs/resultats_stress/verifications.json`_) :
+
+| Question | Mesure | Résultat |
+|---|---|---|
+| Le NDMI suit-il l'eau disponible ? | Spearman NDMI / (pluie − ET0 sur 30 j) | _à remplir_ |
+| … et une fois la quantité de feuilles retirée ? | Spearman résidu / bilan | _à remplir_ |
+| La saison sèche est-elle plus sèche ? | NDMI sec − pluies (IC 95 %) | _à remplir_ |
+| Les écarts entre parcelles sont-ils réels ? | Spearman des z entre dates à ≤ 20 j (contre hasard) | _à remplir_ |
+| Recoupement drone (exploratoire, n = 21) | z vs vigueur faible / part de fusariose | _à remplir_ |
+
+Test de la chaîne sur données simulées (une parcelle rendue plus sèche de 0,06 en NDMI) : seule cette parcelle est en
+alerte, sur 81 dates sur 82 ; aucune fausse alerte grâce au plancher de dispersion et à la règle des 2 dates.
 
 ## 5. Maladies
 Entraînement : Tanzanie (sain / sigatoka / fusarium). Test : Bangladesh, jamais vu ; cordana et pestalotiopsis

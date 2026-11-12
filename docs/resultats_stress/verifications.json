@@ -1,0 +1,69 @@
+{
+  "archives": {
+    "sentinel-2-c1-l2a": 62,
+    "sentinel-2-l2a": 38
+  },
+  "ecart_ndmi_entre_archives": 0.001,
+  "dates_par_annee": {
+    "2021": 35,
+    "2022": 36,
+    "2023": 29
+  },
+  "part_mesures_canopee_fermee": 0.48,
+  "n_dates_comparables": 27,
+  "date_drone_estimee": "2021-05-10",
+  "rho_datation": 0.67,
+  "date_reference": "2022-12-15",
+  "tuile": "MGRS-48QYL",
+  "n_dates": 55,
+  "n_scenes_lues": 100,
+  "saut_rouge_2022": 0.005,
+  "ndmi_vs_ndvi_r2": 0.813,
+  "canopee_a": -0.4518,
+  "canopee_b": 1.0652,
+  "mois_secs": [
+    1,
+    3,
+    11,
+    12
+  ],
+  "rho_bilan_ndmi": [
+    -0.2,
+    -0.53,
+    0.21
+  ],
+  "rho_bilan_residu": [
+    -0.44,
+    -0.72,
+    -0.09
+  ],
+  "rho_bilan_ndvi": [
+    -0.03,
+    -0.41,
+    0.35
+  ],
+  "ndmi_sec_moins_pluies": [
+    0.087,
+    -0.028,
+    0.159
+  ],
+  "mannwhitney_p": 0.06424308155831927,
+  "part_parcelles_plus_seches_en_saison_seche": 0.52,
+  "stabilite_z_stress": 0.8,
+  "stabilite_z_ndmi_brut": 0.93,
+  "stabilite_hasard": -0.07,
+  "rho_z_vigueur_faible_drone": [
+    -0.11,
+    0.656,
+    19
+  ],
+  "rho_z_part_fusariose": [
+    -0.08,
+    0.739,
+    18
+  ],
+  "n_dates_fenetre_drone": 6,
+  "parcelles_en_alerte_reference": [],
+  "part_dates_avec_alerte": 0.15,
+  "duree_lecture_s": 23.9
+}

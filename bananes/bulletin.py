@@ -8,6 +8,7 @@ from shapely.geometry import shape
 SEUIL_FAIBLE = -2.0          # anomalie de vigueur sous laquelle une zone est "faible"
 SURFACE_MIN_ALERTE_M2 = 10   # on ignore les zones faibles plus petites (bruit, ombres)
 PART_FAIBLE_ALERTE = 0.10    # alerte si plus de 10 % de la parcelle est faible
+PENALITE_STRESS = 20         # points retirés au score si la parcelle est en alerte stress hydrique
 
 
 def zones_faibles(anomalie, img):
@@ -59,15 +60,27 @@ def alertes_vigueur(anomalie, parcelles, img):
 def score_sante(stats):
     """Score 0-100, volontairement simple et explicable.
 
-    Il ne dépend pour l'instant que de la vigueur ; il sera enrichi par les
-    modules stress hydrique et maladies, avec des poids documentés dans le rapport.
+    - vigueur : 100 × (1 - part de la parcelle en vigueur faible) ;
+    - stress hydrique : -20 points si la parcelle est en alerte (plus sèche que les autres sur 2 dates).
+    Le poids de 20 points : une alerte stress à elle seule fait passer une parcelle saine (100) derrière
+    une parcelle à 15 % de vigueur faible (85), car c'est une panne qui se répare dans la semaine
+    (irrigation), alors que la vigueur faible demande d'abord un diagnostic.
     """
-    return (100 * (1 - stats["part_vigueur_faible"])).round(0)
+    score = 100 * (1 - stats["part_vigueur_faible"])
+    if "alerte_stress" in stats:
+        score = score - PENALITE_STRESS * stats["alerte_stress"].fillna(False).astype(int)
+    return score.clip(0, 100).round(0)
 
 
-def ecrire(stats, parcelles, alertes, out):
-    """Écrit bulletin.csv, parcelles_bulletin.geojson, alertes.geojson et bulletin.html."""
+def ecrire(stats, parcelles, alertes, out, stress=None):
+    """Écrit bulletin.csv, parcelles_bulletin.geojson, alertes.geojson et bulletin.html.
+
+    stress : tableau par parcelle (parcelle_id, date_stress, z_stress, alerte_stress), produit par
+    notebooks/stress_colab.ipynb à partir de Sentinel-2. Facultatif.
+    """
     stats = stats.copy()
+    if stress is not None:
+        stats = stats.merge(stress, on="parcelle_id", how="left")
     stats["score_sante"] = score_sante(stats)
     stats["alerte_vigueur"] = stats["part_vigueur_faible"] > PART_FAIBLE_ALERTE
     stats = stats.sort_values("score_sante")  # les parcelles à visiter en premier en haut

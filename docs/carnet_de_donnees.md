@@ -16,7 +16,8 @@ Pour chaque source : provenance, licence, résolution, date, composition, usage
 | D3 | ReforesTree — Reiersen et al. 2022 (Zenodo 10.5281/zenodo.6813783) | Orthophotos drone RGB 2 cm + boîtes d'arbres | Équateur | CC BY 4.0 (à vérifier sur Zenodo) | Comptage : apprendre « bananier » + **validation hors site** | ✅ utilisé |
 | M1 | Courageous Land — agroforestry-inventory, `banana.pth` (Hugging Face) | Modèle pré-entraîné | Brésil | Poids CC BY 4.0, code GPL-3.0 | Comptage : détecteur pré-entraîné | non retenu (voir fiche) |
 | M2 | DeepForest `weecology/deepforest-tree` (Hugging Face) | Détecteur RetinaNet de couronnes d'arbres | États-Unis | MIT (à vérifier sur Hugging Face) | Comptage : point de départ du détecteur | ✅ utilisé |
-| S1 | Sentinel-2 L2A (Copernicus Data Space) | Satellite, 10–20 m | à choisir | Licence Copernicus (libre) | Vigueur NDVI, stress NDMI | à télécharger |
+| S1 | Sentinel-2 L2A (archive Element 84 sur AWS) | Satellite, 20 m | 2021–2023 | Licence Copernicus (libre) | Stress hydrique NDMI | lu par le notebook |
+| W1 | Météo ERA5 (via Open-Meteo) | Réanalyse, ~25 km, journalier | 2020–2023 | CC BY 4.0 | Vérification du NDMI (pluie − ET0) | lu par le notebook |
 | T1 | Plantation synthétique (`scripts/creer_donnees_test.py`) | Simulation | — | — | Tests de la chaîne uniquement | ✅ |
 
 Exclu : données figshare de Neupane et al. 2019 (Thaïlande) — **embargo permanent**,
@@ -161,8 +162,27 @@ Fichiers : `docs/resultats_maladies/` (ablations, méthodes de rejet, découpage
   affiné avec nos annotations et ReforesTree, ce qui teste directement l'effet de la résolution.
 
 ### S1 — Sentinel-2
-- Bandes utilisées : B04 (rouge), B08 (PIR), B05 (red-edge) et B11 (SWIR) pour NDMI.
-- Zone, dates (saison sèche / saison des pluies) et couverture nuageuse : _à remplir_.
+- **Source** : Sentinel-2 niveau 2A (réflectance de surface), archive publique d'Element 84 sur AWS
+  (`sentinel-2-c1-l2a`, Collection 1 retraitée par l'ESA ; repli sur `sentinel-2-l2a`). Licence Copernicus : libre, citation de l'ESA.
+- **Zone** : la plantation de Guangxi (D2), mêmes 21 parcelles, fenêtre de ~1 km². Une seule tuile MGRS gardée.
+- **Dates** : 1er janvier 2021 – 31 décembre 2023, autour du relevé terrain (décembre 2022). Saisons définies par la
+  météo (mois où la pluie < ET0), pas a priori.
+- **Bandes** : B04 (rouge, 10 m ramené à 20 m par moyenne), B8A (PIR étroit, 20 m), B11 (SWIR 1 610 nm, 20 m), SCL (masque).
+  B8A plutôt que B08 : même résolution que B11, donc pas de rééchantillonnage pour le NDMI.
+- **Nuages** : filtre grossier < 80 % sur la tuile, puis par pixel (SCL = végétation ou sol nu). Une parcelle est mesurée si
+  80 % de ses pixels sont clairs ; une date est gardée si la moitié de la plantation l'est et si ≥ 10 parcelles sont mesurées.
+- **Piège de réflectance** : depuis le 25/01/2022, l'ESA ajoute 1 000 aux valeurs. Échelle et décalage lus dans les
+  métadonnées de chaque image ; contrôle : pas de saut de la réflectance rouge à cette date.
+- **Limites** : 20 m/pixel → ~25 pixels par parcelle d'1 ha, ~6 pour les plus petites (P01–P04) : on raisonne par
+  parcelle, jamais par plant. Pixels à cheval sur une piste exclus (< 75 % dans la parcelle). Pas de vérité terrain sur
+  l'eau : validation indirecte (météo, saisons, stabilité, recoupement drone).
+- **Fuite** : aucune possible au sens apprentissage : rien n'est entraîné, la seule constante ajustée (droite NDMI ~ NDVI)
+  n'utilise aucune étiquette.
+
+### W1 — Météo ERA5 (Open-Meteo)
+- Pluie et évapotranspiration de référence FAO-56 journalières au centre de la plantation, réanalyse ERA5 (~25 km).
+- Sert uniquement à vérifier que le NDMI suit l'eau disponible (bilan pluie − ET0 sur 30 jours) et à définir les mois secs.
+- Limite : une maille de 25 km ne voit ni l'irrigation ni les différences entre parcelles.
 
 ---
 

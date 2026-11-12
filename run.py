@@ -7,7 +7,8 @@ Pour chaque GeoTIFF du dossier (RGB ou multispectral 5 bandes) :
   1. lit l'image et les parcelles (reprojetées dans le système de l'image)
   2. calcule les indices (NDVI, NDRE si multispectral ; ExG, VARI si RGB) et la carte de vigueur relative
   3. détecte les pieds : détecteur appris (RetinaNet / DeepForest, par défaut) ou baseline (maxima locaux)
-  4. écrit les sorties géospatiales + le bulletin par parcelle
+  4. ajoute le stress hydrique par parcelle (Sentinel-2, calculé par notebooks/stress_colab.ipynb) si fourni
+  5. écrit les sorties géospatiales + le bulletin par parcelle
 """
 import argparse
 import time
@@ -16,7 +17,7 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 
-from bananes import bulletin, comptage, io, vigueur
+from bananes import bulletin, comptage, io, stress, vigueur
 
 
 def main():
@@ -28,6 +29,8 @@ def main():
     parser.add_argument("--comptage", choices=["affine", "robuste", "baseline"], default="affine",
                         help="affine : meilleur sur une monoculture dense type Guangxi (défaut) ; "
                              "robuste : plus stable sur un site très différent ; baseline : maxima locaux, sans réseau")
+    parser.add_argument("--stress", help="stress_par_parcelle.csv produit par notebooks/stress_colab.ipynb "
+                                         "(Sentinel-2) ; sans lui, le bulletin n'a pas de colonne stress hydrique")
     args = parser.parse_args()
     ordre_bandes = args.bandes.split(",") if args.bandes else None
 
@@ -98,7 +101,12 @@ def main():
     alertes = gpd.GeoDataFrame(pd.concat(toutes_les_alertes, ignore_index=True), crs=pieds.crs)
 
     pieds.to_crs(4326).to_file(out / "pieds.geojson", driver="GeoJSON")
-    bulletin.ecrire(stats, parcelles, alertes, out)
+    etat_stress = None
+    if args.stress:
+        etat_stress = stress.lire_etat(args.stress)
+        n_alertes = int(etat_stress["alerte_stress"].sum())
+        print(f"[stress] Sentinel-2 du {etat_stress['date_stress'].max()} : {n_alertes} parcelle(s) en alerte")
+    bulletin.ecrire(stats, parcelles, alertes, out, etat_stress)
     print(f"Terminé. Résultats dans {out.resolve()}")
 
 
