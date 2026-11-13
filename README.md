@@ -66,6 +66,19 @@ python scripts/demo_carte.py --image data/guangxi_pret/images/guangxi_plantation
 
 Il faut Internet à l'ouverture (bibliothèque Leaflet et fond satellite) ; les données et images sont dans le fichier.
 
+## Bonus : plan d'intervention de la semaine
+
+```bash
+python scripts/plan_intervention.py --resultats resultats/
+python scripts/demo_carte.py --image data/guangxi_pret/images/guangxi_plantation.tif --resultats resultats/
+```
+
+Les zones de vigueur faible deviennent des **haltes** (regroupées à moins de 8 m). Priorité 1 : toutes celles des
+parcelles en alerte ; priorité 2 : les taches d'au moins 50 m² ailleurs. La tournée à pied passe d'abord par la
+priorité 1, dans un ordre optimisé. Sorties : `plan_intervention.csv` (ordre, parcelle, surface, heure d'arrivée,
+action), `plan_intervention.geojson`, `plan_intervention_resume.json` ; la carte de démo affiche la tournée.
+Hypothèses de temps (3 km/h, 10 min par halte…) en tête du script, à régler avec le chef de culture.
+
 ## Module stress hydrique (Sentinel-2)
 
 L'eau des feuilles se voit dans l'infrarouge moyen (SWIR), que le drone n'a pas : on utilise Sentinel-2
@@ -136,6 +149,7 @@ scripts/
   classer_feuilles.py      classe un dossier de photos de feuilles
   stress_sentinel2.py      stress hydrique Sentinel-2 sans Colab (généré depuis le notebook)
   demo_carte.py            démo : carte HTML cliquable (+ demo_carte_gabarit.html)
+  plan_intervention.py     bonus : tournée de la semaine (haltes, ordre, temps)
 notebooks/
   maladies_colab.ipynb     entraînement maladies (Colab)
   comptage_colab.ipynb     entraînement et évaluation du détecteur de pieds (Colab)

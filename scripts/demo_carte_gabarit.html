@@ -55,6 +55,7 @@
       <span><i style="background:#2e8b47"></i>≥ 97</span>
       <span><i style="background:none;border:2px solid #ff2828"></i>zone de vigueur faible</span>
     </div>
+    <div id="tournee"></div>
     <h2>Parcelles à visiter en premier</h2>
     <div id="liste"></div>
     <div class="note">
@@ -141,8 +142,38 @@ const alertes = L.geoJSON(D.alertes, {
 const pieds = L.layerGroup(D.pieds.map(([la, lo]) =>
   L.circleMarker([la, lo], { radius: 2.5, color: "#fff", weight: 1, fillColor: "#ffd400", fillOpacity: 0.9 })));
 
+let tournee = null;
+if (D.plan) {
+  tournee = L.layerGroup();
+  D.plan.geo.features.forEach(f => {
+    const q = f.properties;
+    if (f.geometry.type === "LineString") {
+      L.polyline(f.geometry.coordinates.map(([lo, la]) => [la, lo]), { color: "#ffffff", weight: 3, dashArray: "6 6", opacity: 0.95 }).addTo(tournee);
+      return;
+    }
+    const [lo, la] = f.geometry.coordinates;
+    const fond = q.priorite === 1 ? "#1f5a91" : "#6b8fb5";
+    L.marker([la, lo], { icon: L.divIcon({ className: "", iconSize: [24, 24], iconAnchor: [12, 12],
+      html: `<div style="width:24px;height:24px;border-radius:12px;background:${fond};color:#fff;border:2px solid #fff;font:700 12px system-ui;display:flex;align-items:center;justify-content:center">${q.ordre}</div>` }) })
+      .bindPopup(`<div class="popup"><h3>Halte ${q.ordre} · parcelle ${q.parcelle_id}</h3><table>
+        <tr><td>Priorité</td><td>${q.priorite === 1 ? "1 (parcelle en alerte)" : "2 (grande tache ailleurs)"}</td></tr>
+        <tr><td>Zone faible</td><td>${nb(q.surface_m2)} m² (${q.n_zones} tache${q.n_zones > 1 ? "s" : ""})</td></tr>
+        <tr><td>Arrivée</td><td>~${nb(q.minutes_cumulees)} min après le départ</td></tr>
+        <tr><td>À faire</td><td>${q.action}</td></tr></table></div>`, { maxWidth: 340 })
+      .addTo(tournee);
+  });
+  const r = D.plan.resume;
+  document.getElementById("tournee").innerHTML = `<h2>Tournée de la semaine</h2><div class="tuile" style="font-size:12px;line-height:1.5">
+    <b style="font-size:15px">${r.haltes_priorite_1 + r.haltes_priorite_2} haltes · ${nb(r.distance_tournee_km, 1)} km · ${nb(r.duree_tournee_complete_h, 1)} h</b>
+    Priorité 1 (${r.parcelles_prioritaires.join(", ")}) : ${r.haltes_priorite_1} haltes, ${nb(r.duree_priorite_1_h, 1)} h.<br>
+    Tout inspecter à pied : ${nb(r.inspection_complete_km, 1)} km (~${nb(r.inspection_complete_h, 1)} h de marche).
+    <br><a href="#" onclick="carte.addLayer(tournee);carte.fitBounds(parcelles.getBounds());return false">Afficher la tournée</a></div>`;
+}
+
 const superposees = { "Image drone": drone, "Parcelles (score)": parcelles, "Zones de vigueur faible": alertes, "Pieds détectés": pieds };
 if (vigueur) superposees["Vigueur relative (rouge = faible)"] = vigueur;
+if (tournee) superposees["Tournée de la semaine"] = tournee;
+window.tournee = tournee; window.carte = carte; window.parcelles = parcelles;
 L.control.layers({ "Satellite": satellite, "Plan": plan }, superposees, { collapsed: false }).addTo(carte);
 L.control.scale({ imperial: false }).addTo(carte);
 carte.fitBounds(parcelles.getBounds(), { padding: [10, 10] });

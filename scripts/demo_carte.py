@@ -198,6 +198,14 @@ def main():
         "vigueur": couche_vigueur, "parcelles": json.loads(p4326.to_json()), "alertes": json.loads(a4326.to_json()),
         "pieds": pieds_xy, "vignettes_parcelles": vign_parcelles, "vignettes_alertes": vign_alertes,
     }
+    # Bonus : tournée de la semaine (scripts/plan_intervention.py), si elle a été calculée
+    if (res / "plan_intervention.geojson").exists():
+        plan = gpd.read_file(res / "plan_intervention.geojson")
+        resume_plan = json.loads((res / "plan_intervention_resume.json").read_text(encoding="utf-8"))
+        donnees["plan"] = {"geo": json.loads(plan.to_json()), "resume": resume_plan}
+        print(f"Tournée ajoutée : {len(plan) - 1} haltes")
+    else:
+        donnees["plan"] = None
     gabarit = (Path(__file__).with_name("demo_carte_gabarit.html")).read_text(encoding="utf-8")
     html = gabarit.replace("/*__DONNEES__*/null", json.dumps(donnees, ensure_ascii=False, allow_nan=False))
     sortie = res / "carte.html"
