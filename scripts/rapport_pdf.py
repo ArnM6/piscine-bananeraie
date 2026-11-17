@@ -72,7 +72,6 @@ figure.side img { width: 100%; }
 figcaption { font-size: 7.3pt; color:#555; margin-top: 2pt; font-style: italic; }
 """
 html = f"""<html><head><meta charset="utf-8"><style>{css}</style></head><body>
-<h1>{title}</h1><div class="sub">Piscine Intelligence Lab — ECE Paris · Arnaud · novembre 2026 ·
-Code : github.com/ArnM6/piscine-bananeraie</div>{body}</body></html>"""
+<h1>{title}</h1><div class="sub">Piscine Intelligence Lab — ECE Paris · Arnaud · novembre 2026</div>{body}</body></html>"""
 weasyprint.HTML(string=html, base_url=str(repo/"docs")+"/").write_pdf(out)
 print("ok")
