@@ -9,8 +9,8 @@ Les modules ont été choisis selon **la décision terrain qu'ils permettent**, 
 
 | Module | Décision permise | Méthode | Pourquoi ce choix |
 |---|---|---|---|
-| Vigueur (socle) | Où regarder en premier | NDRE drone, comparé à la médiane de la parcelle | Physique simple, validée au sol (§ 4) ; relatif = robuste à la lumière |
-| Comptage | Pieds manquants à replanter, prévision de récolte | RetinaNet (DeepForest) affiné | Seul module où un modèle appris bat nettement la méthode classique (§ 3) |
+| Vigueur (socle) | Où regarder en premier | NDRE drone, comparé à la médiane de la parcelle | Physique simple, validée au sol (voir partie 4) ; relatif = robuste à la lumière |
+| Comptage | Pieds manquants à replanter, prévision de récolte | RetinaNet (DeepForest) affiné | Seul module où un modèle appris bat nettement la méthode classique (voir partie 3) |
 | Maladies | Sigatoka (fongicide) ou fusariose (arrachage, isolement) | MobileNetV3 sur photos de feuilles + rejet kNN | Confirme au sol ce que le drone signale ; dit « je ne sais pas » plutôt que se tromper |
 | Stress hydrique | Vérifier l'irrigation d'une parcelle | NDMI Sentinel-2, comparé aux autres parcelles | Le drone n'a ni SWIR ni thermique ; gratuit, sans entraînement |
 
@@ -60,7 +60,7 @@ Validation hors site : ReforesTree, site d'Équateur exclu de l'entraînement (2
 
 Sobriété : 64,6 Mo, **71 s/ha sur 2 cœurs CPU** (≈ 20 min pour les 18 ha), sans GPU. Affinage : 2 min sur GPU T4.
 
-À retenir :
+Par conséquent :
 - le F1 est **multiplié par 3** par rapport à la baseline, qui échoue sur canopée fermée (NDVI uniforme) ;
 - l'affinage sur 46 pieds est le gain le moins cher, mais il **spécialise** : hors site, le F1 tombe de 0,37 à 0,31
   (et à 0,17–0,18 à 4 et 16 cm). Sans ReforesTree, le modèle affiné surcompte 7 à 18 fois ailleurs ;
@@ -137,7 +137,7 @@ servent de maladies **inconnues**. Seuil de rejet réglé sur la validation Tanz
 | Énergie | 0,61 | 12 % | 74 % | 42 % | 0,72 |
 | **Distance kNN (retenue a priori)** | **0,80** | **3 %** | 73 % | **31 %** | **0,78** |
 
-À retenir :
+Par conséquent :
 - le **pré-entraînement est indispensable** : sans lui, le modèle ne distingue plus l'inconnu (AUROC 0,50 = hasard)
   et les fausses alertes passent de 3 % à 23 % ;
 - les **augmentations** (lumière, cadrage) améliorent le rejet de l'inconnu de 60 % à 73 % ;
@@ -175,7 +175,7 @@ _Maladies (voir `docs/resultats_maladies/cas_echec.png`)_ :
   un smartphone, le classifieur tranche entre Sigatoka et fusariose, ou répond « je ne sais pas » → expert.
 - **Vigueur** : validée sur des plants déjà visiblement malades ; les plants très desséchés passent sous le seuil de
   végétation et sortent de la carte. Une seule date de vol : impossible de suivre une zone dans le temps.
-- **Stress hydrique** : non validé sur ce site (§ 4) ; à 20 m, Sentinel-2 raisonne par parcelle, jamais par plant.
+- **Stress hydrique** : non validé sur ce site (voir partie 4) ; à 20 m, Sentinel-2 raisonne par parcelle, jamais par plant.
   Pour le valider : quelques **sondes d'humidité du sol** et le calendrier d'irrigation. Pour descendre au niveau du
   plant : une **caméra thermique** sur le drone (une feuille qui manque d'eau ferme ses stomates et chauffe).
 - **Date du vol inconnue** : comptage et vigueur (drone) ne datent pas du même jour que l'état Sentinel-2 du bulletin.
